@@ -9,7 +9,7 @@ export function Footer() {
           {/* Marca — usando versión BLANCA sobre fondo oscuro según Manual de Identidad p. 09 */}
           <div className="md:col-span-5">
             <img
-              src="/assets/logo-blanco.png"
+              src="assets/logo-blanco.png"
               alt="Altas Empanadas"
               className="h-11 w-auto object-contain"
             />

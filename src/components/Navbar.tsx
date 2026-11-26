@@ -28,7 +28,7 @@ export function Navbar() {
           aria-label="Altas Empanadas — Inicio"
         >
           <img
-            src="/assets/logo-principal.png"
+            src="assets/logo-principal.png"
             alt="Altas Empanadas"
             className="h-10 w-auto sm:h-12 object-contain"
           />

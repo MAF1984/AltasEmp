@@ -11,7 +11,7 @@ export function DeliveryAndSocial() {
           <div className="grid items-center gap-10 lg:grid-cols-12">
             <div className="lg:col-span-6">
               <img
-                src="/assets/logo-blanco.png"
+                src="assets/logo-blanco.png"
                 alt="Altas Empanadas"
                 className="h-11 w-auto object-contain"
               />
@@ -80,7 +80,7 @@ export function DeliveryAndSocial() {
             <div className="space-y-4 lg:col-span-6">
               <div className="overflow-hidden rounded-2xl border border-white/15">
                 <img
-                  src="/assets/collage_3_tr.jpg"
+                  src="assets/collage_3_tr.jpg"
                   alt="Delivery de cajas y bolsa kraft Altas Empanadas"
                   className="h-56 w-full object-cover sm:h-64"
                 />
@@ -161,10 +161,10 @@ export function DeliveryAndSocial() {
 
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              { src: '/assets/caja_abierta.jpg', alt: 'Caja abierta con empanadas doradas' },
-              { src: '/assets/collage_2_br.jpg', alt: 'Empanadas con vaso de café Altas' },
-              { src: '/assets/collage_2_tl.jpg', alt: 'Packaging oficial Altas Empanadas' },
-              { src: '/assets/collage_3_br.jpg', alt: 'Menú y mesa Altas Empanadas' },
+              { src: 'assets/caja_abierta.jpg', alt: 'Caja abierta con empanadas doradas' },
+              { src: 'assets/collage_2_br.jpg', alt: 'Empanadas con vaso de café Altas' },
+              { src: 'assets/collage_2_tl.jpg', alt: 'Packaging oficial Altas Empanadas' },
+              { src: 'assets/collage_3_br.jpg', alt: 'Menú y mesa Altas Empanadas' },
             ].map((photo) => (
               <a
                 key={photo.src}

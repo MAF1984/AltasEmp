@@ -122,7 +122,7 @@ export function InteractiveEmpanadaBox() {
                 <div className="mb-3 flex items-center justify-between border-b border-[#073B63]/10 pb-2.5">
                   <div className="flex items-center gap-2">
                     <img
-                      src="/assets/isologo.png"
+                      src="assets/isologo.png"
                       alt=""
                       className="h-6 w-6 object-contain"
                     />
@@ -218,7 +218,7 @@ export function InteractiveEmpanadaBox() {
                   {/* Cara exterior de la tapa (arte oficial de la caja) */}
                   <div className="backface-hidden relative h-full w-full overflow-hidden rounded-2xl border-4 border-[#D9A441] bg-[#073B63]">
                     <img
-                      src="/assets/caja_tapa_limpia.jpg"
+                      src="assets/caja_tapa_limpia.jpg"
                       alt="Tapa oficial caja Altas Empanadas"
                       className="h-full w-full object-cover"
                     />
@@ -238,7 +238,7 @@ export function InteractiveEmpanadaBox() {
                     className="backface-hidden absolute inset-0 flex flex-col items-center justify-center rounded-2xl border-4 border-[#D9A441] bg-[#E8D7BC] p-6 text-center shadow-inner"
                   >
                     <img
-                      src="/assets/logo-principal.png"
+                      src="assets/logo-principal.png"
                       alt="Altas Empanadas"
                       className="h-14 w-auto object-contain opacity-90"
                     />

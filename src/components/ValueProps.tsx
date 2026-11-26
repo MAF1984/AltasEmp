@@ -29,14 +29,14 @@ export function ValueProps() {
             <div className="mt-8 grid grid-cols-2 gap-3">
               <div className="overflow-hidden rounded-2xl border border-[#073B63]/10 shadow-md">
                 <img
-                  src="/assets/collage_1_br.jpg"
+                  src="assets/collage_1_br.jpg"
                   alt="Empanada recién horneada con café y bolsa Altas Empanadas"
                   className="h-44 w-full object-cover transition-transform duration-500 hover:scale-105"
                 />
               </div>
               <div className="overflow-hidden rounded-2xl border border-[#073B63]/10 shadow-md">
                 <img
-                  src="/assets/collage_3_tl.jpg"
+                  src="assets/collage_3_tl.jpg"
                   alt="Local Altas Empanadas"
                   className="h-44 w-full object-cover transition-transform duration-500 hover:scale-105"
                 />

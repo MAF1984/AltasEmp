@@ -101,7 +101,7 @@ export function Hero() {
             {/* Marco principal */}
             <div className="overflow-hidden rounded-3xl border-4 border-white bg-[#073B63] shadow-2xl shadow-[#073B63]/15">
               <img
-                src="/assets/collage_1_tl.jpg"
+                src="assets/collage_1_tl.jpg"
                 alt="Caja abierta de Altas Empanadas recién horneadas"
                 className="h-[340px] w-full object-cover sm:h-[430px]"
               />
@@ -115,7 +115,7 @@ export function Hero() {
               className="hidden sm:flex items-center gap-3 rounded-2xl border border-[#D9A441]/35 bg-white/95 px-4 py-3 shadow-xl backdrop-blur-md absolute -top-5 -right-4"
             >
               <img
-                src="/assets/isologo.png"
+                src="assets/isologo.png"
                 alt="Isologo Altas Empanadas"
                 className="h-9 w-9 object-contain"
               />
