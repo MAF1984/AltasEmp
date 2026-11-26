@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta oficial del Manual de Identidad Visual — ALTAS EMPANADAS */
+  --color-brand-blue: #073B63;
+  --color-brand-blue-deep: #042742;
+  --color-brand-blue-soft: #0E4F82;
+  --color-brand-gold: #D9A441;
+  --color-brand-gold-light: #ECC26B;
+  --color-brand-black: #111111;
+  --color-brand-cream: #F8F4EC;
+  --color-brand-ivory: #FDFBF7;
+  --font-sans: "Plus Jakarta Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-brand-ivory);
+    color: var(--color-brand-black);
+    overflow-x: hidden;
+  }
+}
+
+/* 3D Box perspective helpers */
+.perspective-1400 {
+  perspective: 1400px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
