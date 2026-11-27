@@ -1,10 +1,20 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, type MouseEvent } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { PackageOpen, Package, Sparkles, ExternalLink, MessageCircle, Flame } from 'lucide-react';
+import {
+  PackageOpen,
+  Package,
+  Sparkles,
+  ExternalLink,
+  MessageCircle,
+  Flame,
+  Instagram,
+  Rotate3d,
+} from 'lucide-react';
 import { CATALOG_ITEMS, formatCLP, type ProductItem } from '../data/catalog';
 import { SITE_CONFIG, getWhatsAppUrl } from '../config/siteConfig';
 
 const BOX_VARIETIES: ProductItem[] = CATALOG_ITEMS.filter((item) => item.featuredInBox);
+const BOX_DEPTH = 64; // Grosor físico real de la caja en px
 
 /**
  * Ilustración SVG limpia y estilizada de empanada artesanal dorada con repulgue,
@@ -14,13 +24,13 @@ function EmpanadaIcon({ active }: { active: boolean }) {
   return (
     <svg
       viewBox="0 0 80 50"
-      className={`h-10 w-16 transition-transform duration-300 ${
+      className={`h-9 w-14 sm:h-10 sm:w-16 transition-transform duration-300 ${
         active ? 'scale-110 drop-shadow-md' : 'group-hover:scale-105'
       }`}
       aria-hidden="true"
     >
       {/* Sombra base */}
-      <ellipse cx="40" cy="44" rx="30" ry="4" fill="rgba(7,59,99,0.18)" />
+      <ellipse cx="40" cy="44" rx="30" ry="4" fill="rgba(7,59,99,0.2)" />
       {/* Cuerpo dorado de la empanada */}
       <path
         d="M10 38 C10 14, 70 14, 70 38 C70 43, 10 43, 10 38 Z"
@@ -49,14 +59,38 @@ export function InteractiveEmpanadaBox() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<ProductItem>(BOX_VARIETIES[0]);
+  const [tilt, setTilt] = useState({ rx: 0, rz: 0 });
+  const [isAltAngle, setIsAltAngle] = useState(false);
 
-  // Abre la caja automáticamente al llegar a la sección para sorprender al visitante
+  // Muestra primero la caja cerrada en perspectiva isométrica 3D y luego la abre suavemente
   useEffect(() => {
     if (isInView) {
-      const timer = setTimeout(() => setIsOpen(true), 450);
+      const timer = setTimeout(() => setIsOpen(true), 1200);
       return () => clearTimeout(timer);
     }
   }, [isInView]);
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 a 0.5
+    const ny = (e.clientY - rect.top) / rect.height - 0.5;
+    const xStrength = isOpen ? 7 : 10;
+    const zStrength = isOpen ? 10 : 18;
+    setTilt({
+      rx: -ny * xStrength,
+      rz: nx * zStrength,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ rx: 0, rz: 0 });
+  };
+
+  // Ángulos isométricos reales de caja sobre mesa:
+  // Cerrada: vista 3/4 clásica mostrando tapa, frente dorado y lateral azul/dorado
+  // Abierta: centrada de frente (rotateZ: 0) para elegir cada variedad cómodamente sin perder el volumen 3D
+  const baseRotateX = isOpen ? (isAltAngle ? 36 : 24) : 52;
+  const baseRotateZ = isOpen ? (isAltAngle ? 12 : 0) : isAltAngle ? 24 : -24;
 
   return (
     <section
@@ -64,10 +98,10 @@ export function InteractiveEmpanadaBox() {
       ref={sectionRef}
       className="relative overflow-hidden bg-[#073B63] py-20 text-white sm:py-28"
     >
-      {/* Fondo sutil */}
+      {/* Fondo ambiental con iluminación tipo estudio */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(217,164,65,0.14),transparent_48%),radial-gradient(circle_at_85%_80%,rgba(255,255,255,0.06),transparent_45%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(217,164,65,0.16),transparent_48%),radial-gradient(circle_at_80%_75%,rgba(255,255,255,0.06),transparent_45%)]"
       />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -86,8 +120,8 @@ export function InteractiveEmpanadaBox() {
             carne cortada a cuchillo, jamón y queso, roquefort, queso y cebolla y más.
           </p>
 
-          {/* Botón de control manual */}
-          <div className="mt-6 flex justify-center">
+          {/* Controles de la caja 3D */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
               onClick={() => setIsOpen((prev) => !prev)}
@@ -105,149 +139,341 @@ export function InteractiveEmpanadaBox() {
                 </>
               )}
             </button>
+
+            <button
+              type="button"
+              onClick={() => setIsAltAngle((prev) => !prev)}
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-3 text-xs font-bold text-white backdrop-blur-sm transition-all hover:border-[#D9A441]/60 hover:bg-white/15 active:scale-95 cursor-pointer"
+            >
+              <Rotate3d className="h-4 w-4 text-[#D9A441]" />
+              <span>Rotar ángulo 3D</span>
+            </button>
           </div>
         </div>
 
-        {/* Escenario interactivo: Caja 3D a la izquierda + Ficha del sabor a la derecha */}
-        <div className="mt-14 grid items-center gap-10 lg:grid-cols-12">
-          {/* CAJA 3D INTERACTIVA */}
-          <div className="lg:col-span-7">
-            <div className="perspective-1400 relative mx-auto max-w-[560px] pt-8 sm:pt-12">
-              {/* Base de la caja (interior donde aparecen las empanadas) */}
-              <div
-                className="relative rounded-2xl border-4 border-[#D9A441] bg-[#FDFBF7] p-4 shadow-2xl shadow-black/40 sm:p-6"
-                style={{ minHeight: '350px' }}
+        {/* Escenario interactivo: Caja 3D volumétrica a la izquierda + Ficha del sabor a la derecha */}
+        <div className="mt-8 grid items-center gap-10 lg:grid-cols-12">
+          {/* ESCENARIO DE LA CAJA 3D */}
+          <div
+            className="lg:col-span-7"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
+            <div className="perspective-1400 relative mx-auto flex min-h-[460px] items-center justify-center pt-20 pb-12 sm:min-h-[540px] sm:pt-28 sm:pb-14">
+              {/* Cuerpo 3D completo de la caja (geometría ortogonal exacta, sin bordes redondeados que generen grietas) */}
+              <motion.div
+                className="preserve-3d relative h-[360px] w-[310px] sm:h-[420px] sm:w-[440px]"
+                animate={{
+                  rotateX: baseRotateX + tilt.rx,
+                  rotateY: 0,
+                  rotateZ: baseRotateZ + tilt.rz,
+                  y: isOpen ? 20 : -14,
+                  scale: isOpen ? 1 : 0.96,
+                }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 85,
+                  damping: 16,
+                  mass: 1.05,
+                }}
               >
-                {/* Papel manteca / interior con marca de agua sutil */}
-                <div className="mb-3 flex items-center justify-between border-b border-[#073B63]/10 pb-2.5">
-                  <div className="flex items-center gap-2">
+                {/* SOMBRA PROYECTADA SOBRE LA SUPERFICIE */}
+                <motion.div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-4 rounded-2xl bg-black/65 blur-2xl"
+                  animate={{
+                    opacity: isOpen ? 0.55 : 0.78,
+                    z: -(BOX_DEPTH + 14),
+                    y: 20,
+                    x: isAltAngle ? -14 : 14,
+                  }}
+                />
+
+                {/* BASE INFERIOR DE LA CAJA (cierra el fondo para que nunca se transparente) */}
+                <div
+                  aria-hidden="true"
+                  style={{ transform: `translateZ(-${BOX_DEPTH}px)` }}
+                  className="pointer-events-none absolute inset-0 bg-[#031B2E]"
+                />
+
+                {/* PARED FRONTAL 3D — Fiel a caja_frente.jpg (dorada + logo ALTAS + muesca negra + Instagram) */}
+                <div
+                  aria-hidden="true"
+                  style={{
+                    height: `${BOX_DEPTH}px`,
+                    transformOrigin: 'top center',
+                    transform: 'rotateX(-90deg)',
+                  }}
+                  className="pointer-events-none absolute inset-x-0 top-full flex items-center justify-between border-t border-white/25 bg-gradient-to-b from-[#E0AA43] via-[#D9A441] to-[#BC8625] px-4 sm:px-6 shadow-[inset_0_-8px_16px_rgba(0,0,0,0.18)]"
+                >
+                  {/* Muesca semicircular negra para abrir con el pulgar */}
+                  <div className="absolute top-0 left-1/2 h-4 w-9 -translate-x-1/2 rounded-b-full bg-[#061A2B] shadow-[inset_0_2px_6px_rgba(0,0,0,0.8)] sm:h-5 sm:w-11" />
+
+                  {/* Logo azul a la izquierda */}
+                  <img
+                    src="assets/logo-principal.png"
+                    alt=""
+                    className="h-8 w-auto object-contain sm:h-10"
+                  />
+
+                  {/* Instagram a la derecha */}
+                  <div className="flex items-center gap-1.5 text-[#073B63]">
+                    <Instagram className="h-4 w-4 stroke-[2.4] sm:h-5 sm:w-5" />
+                    <span className="text-[11px] font-extrabold tracking-tight sm:text-sm">
+                      altasempanadas.tco
+                    </span>
+                  </div>
+                </div>
+
+                {/* PARED LATERAL IZQUIERDA 3D — Fiel a caja_cerrada.jpg (72% azul con frase + 28% dorado con isologo) */}
+                <div
+                  aria-hidden="true"
+                  style={{
+                    width: `${BOX_DEPTH}px`,
+                    transformOrigin: 'right center',
+                    transform: 'rotateY(-90deg)',
+                  }}
+                  className="pointer-events-none absolute inset-y-0 right-full flex flex-col overflow-hidden border-r border-white/20 shadow-[inset_8px_0_16px_rgba(0,0,0,0.28)]"
+                >
+                  {/* Tramo trasero azul con eslogan blanco */}
+                  <div className="flex flex-[72] items-center justify-center bg-gradient-to-l from-[#0B4C75] to-[#063250] px-1">
+                    <span
+                      style={{ writingMode: 'vertical-rl' }}
+                      className="text-[11px] font-extrabold tracking-wide text-white/95 sm:text-xs"
+                    >
+                      Menos Chamullo, Más Empanadas
+                    </span>
+                  </div>
+                  {/* Tramo delantero dorado con isologo */}
+                  <div className="flex flex-[28] items-center justify-center border-t-2 border-white/70 bg-gradient-to-l from-[#C99432] to-[#A6741D]">
                     <img
                       src="assets/isologo.png"
                       alt=""
-                      className="h-6 w-6 object-contain"
+                      className="h-7 w-7 -rotate-90 object-contain brightness-0 invert opacity-95 sm:h-8 sm:w-8"
                     />
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-[#073B63]">
-                      Selección del Horno · Tocá un sabor
+                  </div>
+                </div>
+
+                {/* PARED LATERAL DERECHA 3D — Simétrica con sombreado direccional */}
+                <div
+                  aria-hidden="true"
+                  style={{
+                    width: `${BOX_DEPTH}px`,
+                    transformOrigin: 'left center',
+                    transform: 'rotateY(90deg)',
+                  }}
+                  className="pointer-events-none absolute inset-y-0 left-full flex flex-col overflow-hidden border-l border-white/15 shadow-[inset_-8px_0_16px_rgba(0,0,0,0.32)]"
+                >
+                  <div className="flex flex-[72] items-center justify-center bg-gradient-to-r from-[#094063] to-[#052942] px-1">
+                    <span
+                      style={{ writingMode: 'vertical-rl' }}
+                      className="rotate-180 text-[11px] font-extrabold tracking-wide text-white/90 sm:text-xs"
+                    >
+                      Menos Chamullo, Más Empanadas
                     </span>
                   </div>
-                  <span className="rounded-full bg-[#D9A441]/20 px-2.5 py-0.5 text-[11px] font-bold text-[#073B63]">
-                    {BOX_VARIETIES.length} variedades
-                  </span>
+                  <div className="flex flex-[28] items-center justify-center border-t-2 border-white/60 bg-gradient-to-r from-[#BC8829] to-[#946416]">
+                    <img
+                      src="assets/isologo.png"
+                      alt=""
+                      className="h-7 w-7 rotate-90 object-contain brightness-0 invert opacity-90 sm:h-8 sm:w-8"
+                    />
+                  </div>
                 </div>
 
-                {/* Grilla de empanadas dentro de la caja */}
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
-                  {BOX_VARIETIES.map((item, index) => {
-                    const isSelected = selected.id === item.id;
-                    return (
-                      <motion.button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setSelected(item)}
-                        initial={false}
-                        animate={
-                          isOpen
-                            ? { opacity: 1, y: 0, scale: 1 }
-                            : { opacity: 0, y: 18, scale: 0.86 }
-                        }
-                        transition={{
-                          type: 'spring',
-                          stiffness: 260,
-                          damping: 20,
-                          delay: isOpen ? 0.22 + index * 0.055 : 0,
-                        }}
-                        className={`group relative flex flex-col items-center justify-between rounded-xl border-2 p-2.5 text-center transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-[#073B63] bg-[#073B63] text-white shadow-lg'
-                            : 'border-[#073B63]/12 bg-white text-[#073B63] hover:border-[#D9A441] hover:bg-[#F8F4EC]'
-                        }`}
-                      >
-                        <span
-                          className={`mb-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                {/* PARED TRASERA 3D */}
+                <div
+                  aria-hidden="true"
+                  style={{
+                    height: `${BOX_DEPTH}px`,
+                    transformOrigin: 'bottom center',
+                    transform: 'rotateX(90deg)',
+                  }}
+                  className="pointer-events-none absolute inset-x-0 bottom-full bg-[#052842]"
+                />
+
+                {/* INTERIOR DE LA CAJA (bandeja de cartón kraft + papel manteca + empanadas) */}
+                <div className="preserve-3d relative flex h-full w-full flex-col justify-between border-[5px] border-[#C9B08A] bg-[#FDFBF7] p-3 shadow-[inset_0_18px_32px_rgba(7,59,99,0.22)] sm:p-4">
+                  {/* Brillo cálido interno al abrir */}
+                  <motion.div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(217,164,65,0.22),transparent_70%)]"
+                    animate={{ opacity: isOpen ? 1 : 0 }}
+                    transition={{ duration: 0.45 }}
+                  />
+
+                  {/* Encabezado interior */}
+                  <div className="relative flex items-center justify-between border-b border-[#073B63]/10 pb-2">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="assets/isologo.png"
+                        alt=""
+                        className="h-5 w-5 object-contain sm:h-6 sm:w-6"
+                      />
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#073B63] sm:text-xs">
+                        Tocá un sabor
+                      </span>
+                    </div>
+                    <span className="rounded-full bg-[#D9A441]/25 px-2.5 py-0.5 text-[10px] font-bold text-[#073B63] sm:text-[11px]">
+                      {BOX_VARIETIES.length} variedades
+                    </span>
+                  </div>
+
+                  {/* Grilla de empanadas que emergen en eje Z */}
+                  <div className="preserve-3d relative my-auto grid grid-cols-2 gap-2 py-2 sm:grid-cols-4 sm:gap-2.5">
+                    {BOX_VARIETIES.map((item, index) => {
+                      const isSelected = selected.id === item.id;
+                      return (
+                        <motion.button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setSelected(item)}
+                          initial={false}
+                          animate={
+                            isOpen
+                              ? {
+                                  opacity: 1,
+                                  y: isSelected ? -3 : 0,
+                                  z: isSelected ? 22 : 8,
+                                  scale: isSelected ? 1.04 : 1,
+                                }
+                              : { opacity: 0, y: 12, z: 0, scale: 0.85 }
+                          }
+                          transition={
+                            isOpen
+                              ? {
+                                  type: 'spring',
+                                  stiffness: 240,
+                                  damping: 20,
+                                  delay: 0.16 + index * 0.045,
+                                }
+                              : {
+                                  duration: 0.18,
+                                  ease: 'easeOut',
+                                }
+                          }
+                          className={`group relative flex flex-col items-center justify-between rounded-xl border-2 p-2 text-center transition-colors cursor-pointer ${
                             isSelected
-                              ? 'bg-[#D9A441] text-[#073B63]'
-                              : 'bg-[#F8F4EC] text-[#073B63]/75'
+                              ? 'border-[#073B63] bg-[#073B63] text-white shadow-[0_14px_22px_rgba(7,59,99,0.38)]'
+                              : 'border-[#073B63]/15 bg-white text-[#073B63] shadow-sm hover:border-[#D9A441] hover:bg-[#F8F4EC]'
                           }`}
                         >
-                          {item.boxRepulgueLabel}
-                        </span>
-                        <EmpanadaIcon active={isSelected} />
-                        <span className="mt-1.5 line-clamp-2 text-xs font-extrabold leading-tight">
-                          {item.name}
-                        </span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
+                          <span
+                            className={`mb-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
+                              isSelected
+                                ? 'bg-[#D9A441] text-[#073B63]'
+                                : 'bg-[#F8F4EC] text-[#073B63]/75'
+                            }`}
+                          >
+                            {item.boxRepulgueLabel}
+                          </span>
+                          <EmpanadaIcon active={isSelected} />
+                          <span className="mt-1 line-clamp-2 text-[11px] font-extrabold leading-tight">
+                            {item.name}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
 
-                {/* Borde frontal dorado de la caja (fiel a cajaEmp.jpeg) */}
-                <div className="mt-4 flex items-center justify-between rounded-xl bg-[#D9A441] px-4 py-2 text-[#073B63]">
-                  <span className="text-xs font-extrabold uppercase tracking-wider">
-                    {SITE_CONFIG.brand.secondaryTagline}
-                  </span>
-                  <span className="text-xs font-bold">{SITE_CONFIG.social.instagramHandle}</span>
-                </div>
+                  {/* Pie interior kraft */}
+                  <div className="relative flex items-center justify-between border-t border-[#073B63]/10 pt-2 text-[10px] font-bold text-[#073B63]/65">
+                    <span>Recién salidas del horno</span>
+                    <span>{SITE_CONFIG.brand.city}</span>
+                  </div>
 
-                {/* TAPA 3D DE LA CAJA — usa el arte oficial real de cajaEmp2.jpeg */}
-                <motion.div
-                  onClick={() => setIsOpen((prev) => !prev)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setIsOpen((prev) => !prev);
+                  {/* TAPA 3D CON BISAGRA EXACTA EN EL BORDE TRASERO */}
+                  <motion.div
+                    onClick={() => setIsOpen((prev) => !prev)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setIsOpen((prev) => !prev);
+                      }
+                    }}
+                    aria-label={isOpen ? 'Cerrar tapa de la caja' : 'Abrir tapa de la caja'}
+                    initial={false}
+                    animate={{
+                      rotateX: isOpen ? 102 : 0,
+                      z: 4,
+                    }}
+                    transition={
+                      isOpen
+                        ? {
+                            type: 'spring',
+                            stiffness: 90,
+                            damping: 18,
+                            mass: 1,
+                          }
+                        : {
+                            duration: 0.55,
+                            ease: [0.22, 1, 0.36, 1],
+                          }
                     }
-                  }}
-                  aria-label={isOpen ? 'Cerrar tapa de la caja' : 'Abrir tapa de la caja'}
-                  initial={false}
-                  animate={{
-                    rotateX: isOpen ? 106 : 0,
-                    y: isOpen ? -12 : 0,
-                  }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 110,
-                    damping: 16,
-                  }}
-                  style={{
-                    transformOrigin: 'top center',
-                  }}
-                  className="preserve-3d absolute inset-0 z-20 cursor-pointer rounded-2xl shadow-2xl"
-                >
-                  {/* Cara exterior de la tapa (arte oficial de la caja) */}
-                  <div className="backface-hidden relative h-full w-full overflow-hidden rounded-2xl border-4 border-[#D9A441] bg-[#073B63]">
-                    <img
-                      src="assets/caja_tapa_limpia.jpg"
-                      alt="Tapa oficial caja Altas Empanadas"
-                      className="h-full w-full object-cover"
-                    />
-                    {/* Indicador interactivo cuando está cerrada */}
-                    {!isOpen && (
-                      <div className="absolute inset-x-0 bottom-5 flex justify-center">
-                        <span className="animate-bounce rounded-full bg-white/95 px-4 py-1.5 text-xs font-extrabold text-[#073B63] shadow-lg">
-                          Tocá para abrir la caja ↑
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Cara interior de la tapa (cartón kraft limpio cuando se abre) */}
-                  <div
-                    style={{ transform: 'rotateX(180deg)' }}
-                    className="backface-hidden absolute inset-0 flex flex-col items-center justify-center rounded-2xl border-4 border-[#D9A441] bg-[#E8D7BC] p-6 text-center shadow-inner"
+                    style={{
+                      transformOrigin: 'top center',
+                      willChange: 'transform',
+                    }}
+                    className="preserve-3d absolute -inset-[5px] z-30 cursor-pointer"
                   >
-                    <img
-                      src="assets/logo-principal.png"
-                      alt="Altas Empanadas"
-                      className="h-14 w-auto object-contain opacity-90"
+                    {/* Cara exterior de la tapa (arte oficial completo 1:1) */}
+                    <div
+                      style={{ transform: 'translateZ(1px)' }}
+                      className="backface-hidden relative h-full w-full overflow-hidden border border-white/25 bg-[#0B4C75] shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
+                    >
+                      <img
+                        src="assets/caja_tapa_limpia.jpg"
+                        alt="Tapa oficial caja Altas Empanadas"
+                        className="h-full w-full object-cover"
+                      />
+                      {/* Iluminación especular realista */}
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/20"
+                      />
+                      {/* Etiqueta interactiva cuando está cerrada */}
+                      {!isOpen && (
+                        <div className="absolute inset-x-0 bottom-7 flex justify-center">
+                          <span className="animate-bounce rounded-full bg-white/95 px-4 py-1.5 text-xs font-extrabold text-[#073B63] shadow-xl">
+                            Tocá para abrir la caja ↑
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cara interior de la tapa (cartón kraft limpio al abrir) */}
+                    <div
+                      style={{ transform: 'rotateX(180deg) translateZ(1px)' }}
+                      className="backface-hidden absolute inset-0 flex flex-col items-center justify-center border-[5px] border-[#C9B08A] bg-gradient-to-b from-[#D9C29C] via-[#E8D7BC] to-[#D4BA90] p-6 text-center shadow-[inset_0_-24px_36px_rgba(7,59,99,0.2)]"
+                    >
+                      <img
+                        src="assets/logo-principal.png"
+                        alt="Altas Empanadas"
+                        className="h-14 w-auto object-contain opacity-90 sm:h-16"
+                      />
+                      <p className="mt-2.5 text-xs font-extrabold uppercase tracking-widest text-[#073B63]">
+                        {SITE_CONFIG.brand.slogan}
+                      </p>
+                      <span className="mt-3 rounded-full bg-[#073B63]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#073B63]/75">
+                        Tocá la tapa para cerrar
+                      </span>
+                    </div>
+
+                    {/* Borde frontal fino de la tapa (grosor del cartón al levantarse) */}
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        height: '12px',
+                        transformOrigin: 'top center',
+                        transform: 'rotateX(-90deg)',
+                      }}
+                      className="pointer-events-none absolute inset-x-0 top-full bg-gradient-to-b from-[#E5B454] to-[#C28D2C] shadow-sm"
                     />
-                    <p className="mt-2 text-xs font-extrabold uppercase tracking-widest text-[#073B63]">
-                      {SITE_CONFIG.brand.slogan}
-                    </p>
-                  </div>
-                </motion.div>
-              </div>
+                  </motion.div>
+                </div>
+              </motion.div>
             </div>
           </div>
 

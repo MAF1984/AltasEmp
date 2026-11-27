@@ -28,7 +28,8 @@
 
 /* 3D Box perspective helpers */
 .perspective-1400 {
-  perspective: 1400px;
+  perspective: 1100px;
+  perspective-origin: 50% 42%;
 }
 
 .preserve-3d {
@@ -37,4 +38,5 @@
 
 .backface-hidden {
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
